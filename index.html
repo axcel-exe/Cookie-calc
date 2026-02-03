@@ -10,29 +10,40 @@
     }
 
     body {
-      background: #111;
+      margin: 0;
+      height: 100vh;
+      background: #0f0f0f;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
     }
 
     .calculator {
-      background: #1c1c1c;
+      width: 280px;
+      background: #1b1b1b;
       padding: 20px;
-      border-radius: 16px;
-      width: 260px;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
     .display {
       background: #000;
-      color: #0f0;
-      font-size: 2rem;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: right;
+      border-radius: 12px;
+      padding: 12px;
       margin-bottom: 15px;
+      color: #0f0;
+      text-align: right;
       overflow-x: auto;
+    }
+
+    #operation {
+      font-size: 0.9rem;
+      color: #888;
+      min-height: 1em;
+    }
+
+    #result {
+      font-size: 2rem;
     }
 
     .buttons {
@@ -45,34 +56,37 @@
       padding: 15px;
       font-size: 1.1rem;
       border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #333;
+      border-radius: 12px;
+      background: #2f2f2f;
       color: #fff;
-    }
-
-    button.operator {
-      background: #ff9500;
-    }
-
-    button.equal {
-      background: #34c759;
-      grid-column: span 2;
-    }
-
-    button.clear {
-      background: #ff3b30;
+      cursor: pointer;
     }
 
     button:active {
       transform: scale(0.95);
+    }
+
+    .operator {
+      background: #ff9500;
+    }
+
+    .equal {
+      grid-column: span 2;
+      background: #34c759;
+    }
+
+    .clear {
+      background: #ff3b30;
     }
   </style>
 </head>
 <body>
 
 <div class="calculator">
-  <div id="display" class="display">0</div>
+  <div class="display">
+    <div id="operation"></div>
+    <div id="result">0</div>
+  </div>
 
   <div class="buttons">
     <button class="clear">C</button>
@@ -102,93 +116,322 @@
 </div>
 
 <script>
-  const display = document.getElementById("display");
+  const resultEl = document.getElementById("result");
+  const operationEl = document.getElementById("operation");
   const buttons = document.querySelectorAll("button");
 
-  let currentValue = "";
-  let previousValue = "";
+  let current = "";
+  let previous = "";
   let operator = null;
 
-  function updateDisplay(value) {
-    display.textContent = value || "0";
+  function updateResult(val) {
+    resultEl.textContent = val || "0";
+  }
+
+  function updateOperation() {
+    operationEl.textContent =
+      previous && operator ? `${previous} ${operator}` : "";
   }
 
   function calculate() {
-    let prev = parseFloat(previousValue);
-    let curr = parseFloat(currentValue);
-    if (isNaN(prev) || isNaN(curr)) return;
+    const a = parseFloat(previous);
+    const b = parseFloat(current);
+    if (isNaN(a) || isNaN(b)) return;
 
-    let result;
+    let res;
     switch (operator) {
-      case "+":
-        result = prev + curr;
-        break;
-      case "−":
-        result = prev - curr;
-        break;
-      case "×":
-        result = prev * curr;
-        break;
+      case "+": res = a + b; break;
+      case "−": res = a - b; break;
+      case "×": res = a * b; break;
       case "÷":
-        result = curr === 0 ? "Nah bro 💀" : prev / curr;
+        if (b === 0) {
+          res = "💀";
+          break;
+        }
+        res = a / b;
         break;
-      default:
-        return;
     }
 
-    // floating point fix
-    result = typeof result === "number"
-      ? Number(result.toFixed(10))
-      : result;
+    res = typeof res === "number"
+      ? Number(res.toFixed(10))
+      : res;
 
-    currentValue = result.toString();
+    current = res.toString();
+    previous = "";
     operator = null;
-    previousValue = "";
+    updateOperation();
   }
 
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
-      const value = btn.textContent;
+      const val = btn.textContent;
 
-      if (!isNaN(value) || value === ".") {
-        if (value === "." && currentValue.includes(".")) return;
-        currentValue += value;
-        updateDisplay(currentValue);
+      // numbers & decimal
+      if (!isNaN(val) || val === ".") {
+        if (val === "." && current.includes(".")) return;
+        current += val;
+        updateResult(current);
       }
 
-      if (["+", "−", "×", "÷"].includes(value)) {
-        if (currentValue === "") return;
-        previousValue = currentValue;
-        currentValue = "";
-        operator = value;
+      // operators
+      if (["+", "−", "×", "÷"].includes(val)) {
+        if (!current) return;
+        previous = current;
+        current = "";
+        operator = val;
+        updateOperation();
       }
 
-      if (value === "=") {
+      // equals
+      if (val === "=") {
         calculate();
-        updateDisplay(currentValue);
+        updateResult(current);
       }
 
-      if (value === "C") {
-        currentValue = "";
-        previousValue = "";
+      // clear
+      if (val === "C") {
+        current = "";
+        previous = "";
         operator = null;
-        updateDisplay("0");
+        updateResult("0");
+        updateOperation();
       }
     });
   });
 
+  // +/- toggle
   document.getElementById("toggle").addEventListener("click", () => {
-    if (currentValue === "") return;
-    currentValue = (parseFloat(currentValue) * -1).toString();
-    updateDisplay(currentValue);
+    if (!current) return;
+    current = (parseFloat(current) * -1).toString();
+    updateResult(current);
   });
 
+  // percent
   document.getElementById("percent").addEventListener("click", () => {
-    if (currentValue === "") return;
-    currentValue = (parseFloat(currentValue) / 100).toString();
-    updateDisplay(currentValue);
+    if (!current) return;
+    current = (parseFloat(current) / 100).toString();
+    updateResult(current);
   });
 </script>
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cookie Calculator 🍪</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0f0f0f;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .calculator {
+      width: 280px;
+      background: #1b1b1b;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .display {
+      background: #000;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 15px;
+      color: #0f0;
+      text-align: right;
+      overflow-x: auto;
+    }
+
+    #operation {
+      font-size: 0.9rem;
+      color: #888;
+      min-height: 1em;
+    }
+
+    #result {
+      font-size: 2rem;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 12px;
+      background: #2f2f2f;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .operator {
+      background: #ff9500;
+    }
+
+    .equal {
+      grid-column: span 2;
+      background: #34c759;
+    }
+
+    .clear {
+      background: #ff3b30;
+    }
+  </style>
+</head>
+<body>
+
+<div class="calculator">
+  <div class="display">
+    <div id="operation"></div>
+    <div id="result">0</div>
+  </div>
+
+  <div class="buttons">
+    <button class="clear">C</button>
+    <button id="toggle">+/-</button>
+    <button id="percent">%</button>
+    <button class="operator">÷</button>
+
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button class="operator">×</button>
+
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button class="operator">−</button>
+
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button class="operator">+</button>
+
+    <button>0</button>
+    <button>.</button>
+    <button class="equal">=</button>
+  </div>
+</div>
+
+<script>
+  const resultEl = document.getElementById("result");
+  const operationEl = document.getElementById("operation");
+  const buttons = document.querySelectorAll("button");
+
+  let current = "";
+  let previous = "";
+  let operator = null;
+
+  function updateResult(val) {
+    resultEl.textContent = val || "0";
+  }
+
+  function updateOperation() {
+    operationEl.textContent =
+      previous && operator ? `${previous} ${operator}` : "";
+  }
+
+  function calculate() {
+    const a = parseFloat(previous);
+    const b = parseFloat(current);
+    if (isNaN(a) || isNaN(b)) return;
+
+    let res;
+    switch (operator) {
+      case "+": res = a + b; break;
+      case "−": res = a - b; break;
+      case "×": res = a * b; break;
+      case "÷":
+        if (b === 0) {
+          res = "💀";
+          break;
+        }
+        res = a / b;
+        break;
+    }
+
+    res = typeof res === "number"
+      ? Number(res.toFixed(10))
+      : res;
+
+    current = res.toString();
+    previous = "";
+    operator = null;
+    updateOperation();
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const val = btn.textContent;
+
+      // numbers & decimal
+      if (!isNaN(val) || val === ".") {
+        if (val === "." && current.includes(".")) return;
+        current += val;
+        updateResult(current);
+      }
+
+      // operators
+      if (["+", "−", "×", "÷"].includes(val)) {
+        if (!current) return;
+        previous = current;
+        current = "";
+        operator = val;
+        updateOperation();
+      }
+
+      // equals
+      if (val === "=") {
+        calculate();
+        updateResult(current);
+      }
+
+      // clear
+      if (val === "C") {
+        current = "";
+        previous = "";
+        operator = null;
+        updateResult("0");
+        updateOperation();
+      }
+    });
+  });
+
+  // +/- toggle
+  document.getElementById("toggle").addEventListener("click", () => {
+    if (!current) return;
+    current = (parseFloat(current) * -1).toString();
+    updateResult(current);
+  });
+
+  // percent
+  document.getElementById("percent").addEventListener("click", () => {
+    if (!current) return;
+    current = (parseFloat(current) / 100).toString();
+    updateResult(current);
+  });
+</script>
+
+</body>
+</html>
+
