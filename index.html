@@ -1,218 +1,194 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>HTML Calculator</title>
-    <style>
-        :root {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-            --bg: #1e1f23;
-            --panel: #2b2d31;
-            --accent: #4caf50;
-            --btn: #3a3c40;
-            --text: #e6e6e6
-        }
+  <meta charset="UTF-8" />
+  <title>Cookie Calculator 🍪</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
 
-        * {
-            box-sizing: border-box
-        }
+    body {
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(180deg, #0f1720, #111217)
-        }
+    .calculator {
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 16px;
+      width: 260px;
+    }
 
-        .calc {
-            width: 320px;
-            background: var(--panel);
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 6px 30px rgba(0, 0, 0, .6)
-        }
+    .display {
+      background: #000;
+      color: #0f0;
+      font-size: 2rem;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: right;
+      margin-bottom: 15px;
+      overflow-x: auto;
+    }
 
-        .display {
-            height: 64px;
-            background: var(--bg);
-            color: var(--text);
-            font-size: 1.6rem;
-            padding: 12px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-end;
-            overflow: hidden;
-            word-wrap: anywhere
-        }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
 
-        .small {
-            font-size: .8rem;
-            color: #9aa0a6;
-            opacity: .9
-        }
+    button {
+      padding: 15px;
+      font-size: 1.1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #333;
+      color: #fff;
+    }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 12px
-        }
+    button.operator {
+      background: #ff9500;
+    }
 
-        button {
-            height: 56px;
-            border-radius: 8px;
-            border: 0;
-            background: var(--btn);
-            color: var(--text);
-            font-size: 1.1rem;
-            cursor: pointer;
-            box-shadow: inset 0 -3px rgba(0, 0, 0, .2)
-        }
+    button.equal {
+      background: #34c759;
+      grid-column: span 2;
+    }
 
-        button.operator {
-            background: linear-gradient(180deg, #ffb866, #ff9f3b);
-            color: #111
-        }
+    button.clear {
+      background: #ff3b30;
+    }
 
-        button.equal {
-            background: var(--accent);
-            color: #04110b;
-            grid-column: span 2
-        }
-
-        button.clear {
-            background: #d9534f;
-            color: #fff
-        }
-
-        button:active {
-            transform: translateY(1px)
-        }
-    </style>
+    button:active {
+      transform: scale(0.95);
+    }
+  </style>
 </head>
-
 <body>
-    <div class="calc" role="application" aria-label="Calculator">
-        <div class="display" id="display" aria-live="polite">
-            <div class="small" id="expr">&nbsp;</div>
-            <div id="result">0</div>
-        </div>
-        <div class="grid" id="keys">
-            <button class="clear" data-action="clear">C</button>
-            <button data-action="back">⌫</button>
-            <button data-value="(">(</button>
-            <button data-value=")" class="operator">)</button>
 
-            <button data-value="7">7</button>
-            <button data-value="8">8</button>
-            <button data-value="9">9</button>
-            <button data-value="/" class="operator">÷</button>
+<div class="calculator">
+  <div id="display" class="display">0</div>
 
-            <button data-value="4">4</button>
-            <button data-value="5">5</button>
-            <button data-value="6">6</button>
-            <button data-value="*" class="operator">×</button>
+  <div class="buttons">
+    <button class="clear">C</button>
+    <button id="toggle">+/-</button>
+    <button id="percent">%</button>
+    <button class="operator">÷</button>
 
-            <button data-value="1">1</button>
-            <button data-value="2">2</button>
-            <button data-value="3">3</button>
-            <button data-value="-" class="operator">−</button>
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button class="operator">×</button>
 
-            <button data-value="0" style="grid-column:span 2">0</button>
-            <button data-value=".">.</button>
-            <button data-value="+" class="operator">+</button>
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button class="operator">−</button>
 
-            <button data-action="neg">+/-</button>
-            <button class="equal" data-action="equals">=</button>
-        </div>
-    </div>
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button class="operator">+</button>
 
-    <script>
-        const exprEl = document.getElementById('expr');
-        const resultEl = document.getElementById('result');
-        let expr = '';
+    <button>0</button>
+    <button>.</button>
+    <button class="equal">=</button>
+  </div>
+</div>
 
-        function refresh() {
-            exprEl.textContent = expr || '\xa0';
-            resultEl.textContent = expr ? expr : '0';
-        }
+<script>
+  const display = document.getElementById("display");
+  const buttons = document.querySelectorAll("button");
 
-        function sanitizeForEval(s) {
-            if (!/^[0-9+\-*/().\s]+$/.test(s)) throw new Error('Invalid chars');
-            return s;
-        }
+  let currentValue = "";
+  let previousValue = "";
+  let operator = null;
 
-        function compute(s) {
-            try {
-                const safe = sanitizeForEval(s);
-                // replace unicode operator glyphs if present
-                const normalized = safe.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
-                // prevent leading zeros like "00" causing octal — using Function is fine here after validation
-                return Function('"use strict";return (' + normalized + ')')();
-            } catch {
-                return 'Error';
-            }
-        }
+  function updateDisplay(value) {
+    display.textContent = value || "0";
+  }
 
-        document.getElementById('keys').addEventListener('click', e => {
-            const btn = e.target.closest('button');
-            if (!btn) return;
-            const v = btn.getAttribute('data-value');
-            const action = btn.getAttribute('data-action');
+  function calculate() {
+    let prev = parseFloat(previousValue);
+    let curr = parseFloat(currentValue);
+    if (isNaN(prev) || isNaN(curr)) return;
 
-            if (action === 'clear') { expr = ''; refresh(); return; }
-            if (action === 'back') { expr = expr.slice(0, -1); refresh(); return; }
-            if (action === 'equals') {
-                const res = compute(expr);
-                expr = res === 'Error' ? '' : String(res);
-                refresh();
-                return;
-            }
-            if (action === 'neg') {
-                if (!expr) return;
-                // toggle leading negative of the last number
-                expr = expr.replace(/(\d+(\.\d+)?)$/, m => (m.startsWith('-') ? m.slice(1) : '-' + m));
-                refresh();
-                return;
-            }
-            if (v) {
-                // avoid multiple operators in a row
-                if (/^[+\-*/.]$/.test(v) && /[+\-*/.]$/.test(expr)) {
-                    // replace last operator
-                    expr = expr.slice(0, -1) + v;
-                } else {
-                    expr += v;
-                }
-                refresh();
-            }
-        });
+    let result;
+    switch (operator) {
+      case "+":
+        result = prev + curr;
+        break;
+      case "−":
+        result = prev - curr;
+        break;
+      case "×":
+        result = prev * curr;
+        break;
+      case "÷":
+        result = curr === 0 ? "Nah bro 💀" : prev / curr;
+        break;
+      default:
+        return;
+    }
 
-        // keyboard support
-        window.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); document.querySelector('[data-action="equals"]').click(); return; }
-            if (e.key === 'Backspace') { e.preventDefault(); document.querySelector('[data-action="back"]').click(); return; }
-            if (e.key === 'Escape') { document.querySelector('[data-action="clear"]').click(); return; }
-            if (/^[0-9+\-*/().]$/.test(e.key)) {
-                const btn = [...document.querySelectorAll('[data-value]')].find(b => b.getAttribute('data-value') === e.key);
-                if (btn) btn.click();
-            }
-        });
+    // floating point fix
+    result = typeof result === "number"
+      ? Number(result.toFixed(10))
+      : result;
 
-        // live evaluation (optional)
-        setInterval(() => {
-            if (!expr) { resultEl.textContent = '0'; return; }
-            const res = compute(expr);
-            resultEl.textContent = res === 'Error' ? 'Error' : res;
-        }, 400);
+    currentValue = result.toString();
+    operator = null;
+    previousValue = "";
+  }
 
-        refresh();
-    </script>
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = btn.textContent;
+
+      if (!isNaN(value) || value === ".") {
+        if (value === "." && currentValue.includes(".")) return;
+        currentValue += value;
+        updateDisplay(currentValue);
+      }
+
+      if (["+", "−", "×", "÷"].includes(value)) {
+        if (currentValue === "") return;
+        previousValue = currentValue;
+        currentValue = "";
+        operator = value;
+      }
+
+      if (value === "=") {
+        calculate();
+        updateDisplay(currentValue);
+      }
+
+      if (value === "C") {
+        currentValue = "";
+        previousValue = "";
+        operator = null;
+        updateDisplay("0");
+      }
+    });
+  });
+
+  document.getElementById("toggle").addEventListener("click", () => {
+    if (currentValue === "") return;
+    currentValue = (parseFloat(currentValue) * -1).toString();
+    updateDisplay(currentValue);
+  });
+
+  document.getElementById("percent").addEventListener("click", () => {
+    if (currentValue === "") return;
+    currentValue = (parseFloat(currentValue) / 100).toString();
+    updateDisplay(currentValue);
+  });
+</script>
+
 </body>
-
 </html>
