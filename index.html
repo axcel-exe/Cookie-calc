@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cookie Calculator 🍪</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -12,7 +13,7 @@
     body {
       margin: 0;
       height: 100vh;
-      background: #0f0f0f;
+      background: radial-gradient(circle, #1a1a1a, #000);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -22,8 +23,8 @@
       width: 280px;
       background: #1b1b1b;
       padding: 20px;
-      border-radius: 18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.7);
     }
 
     .display {
@@ -37,8 +38,8 @@
     }
 
     #operation {
-      font-size: 0.9rem;
-      color: #888;
+      font-size: 0.85rem;
+      color: #777;
       min-height: 1em;
     }
 
@@ -82,6 +83,7 @@
 </head>
 <body>
 
+<!-- ONLY ONE CALCULATOR. DONT DUPLICATE THIS DIV. -->
 <div class="calculator">
   <div class="display">
     <div id="operation"></div>
@@ -150,8 +152,11 @@
         }
         res = a / b;
         break;
+      default:
+        return;
     }
 
+    // floating point fix
     res = typeof res === "number"
       ? Number(res.toFixed(10))
       : res;
@@ -166,225 +171,7 @@
     btn.addEventListener("click", () => {
       const val = btn.textContent;
 
-      // numbers & decimal
-      if (!isNaN(val) || val === ".") {
-        if (val === "." && current.includes(".")) return;
-        current += val;
-        updateResult(current);
-      }
-
-      // operators
-      if (["+", "−", "×", "÷"].includes(val)) {
-        if (!current) return;
-        previous = current;
-        current = "";
-        operator = val;
-        updateOperation();
-      }
-
-      // equals
-      if (val === "=") {
-        calculate();
-        updateResult(current);
-      }
-
-      // clear
-      if (val === "C") {
-        current = "";
-        previous = "";
-        operator = null;
-        updateResult("0");
-        updateOperation();
-      }
-    });
-  });
-
-  // +/- toggle
-  document.getElementById("toggle").addEventListener("click", () => {
-    if (!current) return;
-    current = (parseFloat(current) * -1).toString();
-    updateResult(current);
-  });
-
-  // percent
-  document.getElementById("percent").addEventListener("click", () => {
-    if (!current) return;
-    current = (parseFloat(current) / 100).toString();
-    updateResult(current);
-  });
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Cookie Calculator 🍪</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
-    }
-
-    body {
-      margin: 0;
-      height: 100vh;
-      background: #0f0f0f;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .calculator {
-      width: 280px;
-      background: #1b1b1b;
-      padding: 20px;
-      border-radius: 18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
-    .display {
-      background: #000;
-      border-radius: 12px;
-      padding: 12px;
-      margin-bottom: 15px;
-      color: #0f0;
-      text-align: right;
-      overflow-x: auto;
-    }
-
-    #operation {
-      font-size: 0.9rem;
-      color: #888;
-      min-height: 1em;
-    }
-
-    #result {
-      font-size: 2rem;
-    }
-
-    .buttons {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    button {
-      padding: 15px;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 12px;
-      background: #2f2f2f;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    .operator {
-      background: #ff9500;
-    }
-
-    .equal {
-      grid-column: span 2;
-      background: #34c759;
-    }
-
-    .clear {
-      background: #ff3b30;
-    }
-  </style>
-</head>
-<body>
-
-<div class="calculator">
-  <div class="display">
-    <div id="operation"></div>
-    <div id="result">0</div>
-  </div>
-
-  <div class="buttons">
-    <button class="clear">C</button>
-    <button id="toggle">+/-</button>
-    <button id="percent">%</button>
-    <button class="operator">÷</button>
-
-    <button>7</button>
-    <button>8</button>
-    <button>9</button>
-    <button class="operator">×</button>
-
-    <button>4</button>
-    <button>5</button>
-    <button>6</button>
-    <button class="operator">−</button>
-
-    <button>1</button>
-    <button>2</button>
-    <button>3</button>
-    <button class="operator">+</button>
-
-    <button>0</button>
-    <button>.</button>
-    <button class="equal">=</button>
-  </div>
-</div>
-
-<script>
-  const resultEl = document.getElementById("result");
-  const operationEl = document.getElementById("operation");
-  const buttons = document.querySelectorAll("button");
-
-  let current = "";
-  let previous = "";
-  let operator = null;
-
-  function updateResult(val) {
-    resultEl.textContent = val || "0";
-  }
-
-  function updateOperation() {
-    operationEl.textContent =
-      previous && operator ? `${previous} ${operator}` : "";
-  }
-
-  function calculate() {
-    const a = parseFloat(previous);
-    const b = parseFloat(current);
-    if (isNaN(a) || isNaN(b)) return;
-
-    let res;
-    switch (operator) {
-      case "+": res = a + b; break;
-      case "−": res = a - b; break;
-      case "×": res = a * b; break;
-      case "÷":
-        if (b === 0) {
-          res = "💀";
-          break;
-        }
-        res = a / b;
-        break;
-    }
-
-    res = typeof res === "number"
-      ? Number(res.toFixed(10))
-      : res;
-
-    current = res.toString();
-    previous = "";
-    operator = null;
-    updateOperation();
-  }
-
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const val = btn.textContent;
-
-      // numbers & decimal
+      // numbers + decimal
       if (!isNaN(val) || val === ".") {
         if (val === "." && current.includes(".")) return;
         current += val;
